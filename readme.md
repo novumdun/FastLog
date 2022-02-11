@@ -274,7 +274,7 @@ do
 ```
 
 * Use the macro STR_BUF_WRITE_STRU instead of printf to achieve debug information generation. In STR_BUF_WRITE_STRU("Errno %d\n", 3), "Errno %d\n" is called the format string, and "3" is called the debug parameter.
-* Use the compiler predefined macro __COUNTER__ to indicate the number of STR_BUF_WRITE_STRU in the current C file. STR_BUF_WRITE_STRU uses __COUNTER__ to obtain the effective sequence number of the STR_BUF_WRITE_STRU in the current C file.
+* Use the compiler predefined macro ____COUNTER___ to indicate the number of STR_BUF_WRITE_STRU in the current C file. STR_BUF_WRITE_STRU uses ____COUNTER___ to obtain the effective sequence number of the STR_BUF_WRITE_STRU in the current C file.
 * STR_BUF_WRITE_STRU generates a unique STR_BUF_WRITE_STRU address for the entire project according to the starting address of the STR_BUF_WRITE_STRU address space and the valid sequence number. The STR_BUF_WRITE_STRU address ('SET_COUNTER') is an integer that encodes debug information. The bit length can be adapted according to the needs of the project. The 2-byte STR_BUF_WRITE_STRU address space contains 65536 STR_BUF_WRITE_STRU addresses.
 * STR_BUF_WRITE_STRU generates structure types and variables according to the debug parameters. The structure member types correspond to the debug parameter types one-to-one. The structure members are aligned with a single byte, and the values of the structure variable members are initialized to the values of the debug parameters.
 * Obtain format string, debug parameter type, debug parameter bit width, STR_BUF_WRITE_STRU calling line number, debug parameter structure class size (in bytes) through STR_BUF_WRITE_STRU.
