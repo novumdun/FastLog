@@ -1,9 +1,9 @@
-#ifndef __i_h___
-#define __i_h___
+#ifndef __FASTLOG_h___
+#define __FASTLOG_h___
 
 
 /*************************************************************************************
-"fast-print only works with GNU99 not C99, you need to change the compile option\
+"fastlog only works with GNU99 not C99, you need to change the compile option\
     get_property(CSTD GLOBAL PROPERTY CSTD) \
     set_ifndef(CSTD c99)  \
 to  \
