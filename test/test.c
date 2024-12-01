@@ -1,15 +1,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-#include "macro_paras_opt.h"
-#include "macro_struct.h"
-#include "macro_type.h"
-
-#include "fastlog_ext.h"
-
-#include <oneos_config.h>
-#include <os_task.h>
-#include <shell.h>
+#include "fastlog.h"
 
 #ifdef PYTHON_SATRT
 #warning "ddddddddddddddddddddddd"
