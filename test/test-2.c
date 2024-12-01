@@ -11,15 +11,11 @@
 #include <os_task.h>
 #include <shell.h>
 
-
 #ifdef PYTHON_SATRT
 #warning "ddddddddddddddddddddddd"
 #endif
 
-extern void
-console_output_bin(char *buff, int data_len);
-
-int test_2()
+int main(int argc, char **argv)
 {
 	char t0 = 01;
 	unsigned char t1 = 2;
@@ -46,4 +42,3 @@ int test_2()
 
 	return 0;
 }
-SH_CMD_EXPORT(fastlog_test_2, test_2, "fast print test")

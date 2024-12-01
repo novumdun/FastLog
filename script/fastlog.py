@@ -255,7 +255,7 @@ def get_fastlog_call(file_path, out_file_path, print_items):
     return
 
 
-def fastlog(srcs_stru, includes, out_path):
+def fastlog(srcs_stru: list[str], includes: str, out_path: str):
     record_items = {}
     record_items_old = {}
 
