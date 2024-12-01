@@ -5,64 +5,65 @@ import platform
 import subprocess
 import re
 import os
+import fcntl
+import time
 
 # if files use 'fastlog' module
-def is_fastlog_files(file_name):
-    matchObj = re.match(r'(.+).c$', file_name, re.M | re.I)
-    if matchObj:
-        file = open(file_name, mode='r', encoding='UTF-8', errors='ignore')
-        context = file.read()
-        file.close()
-
-        pattern = re.compile(r'STR_BUF_WRITE_STRU')   #
-        result = pattern.findall(context)
-        return len(result)
-    return 0
 
 
-def mkdir(path):
+def use_fastlog(fileContext: str):
+    pattern = re.compile(r'STR_BUF_WRITE_STRU')
+    result = pattern.findall(fileContext)
+    return len(result)
+
+
+def mkdirs(path):
     if True != os.path.exists(path):
         os.makedirs(path)  # makedirs
 
 
-def file_preprocess(file, inc_paths, out_path, macro_def=''):
-    inc_path = ''
-    for i_path in inc_paths:
-        inc_path += ' -I '+i_path
-    macro_defs = macro_def
-
-    (relative_dir, file_name) = os.path.split(file)
-    out_file_dir = os.path.join(out_path, 'build/myout', relative_dir)
-    mkdir(out_file_dir)
-    out_file = os.path.join(out_file_dir, file_name+'.i')
-
-    cmd_str = 'clang -E '+file + ' ' + \
-        inc_path+macro_defs+' > '+out_file
-
-    # print(cmd_str)
+def preprocess(srcFile: str, includes: str, macro_def: str = ''):
+    cmd_str = 'clang -E '+srcFile + ' ' + \
+        includes+macro_def
     ret = subprocess.check_output(cmd_str, shell=True)
-    sys = platform.system()
-    if sys == "Windows":
-        # print(ret.decode('gbk'))  #
-        pass
-    else:
-        # print(ret)
-        pass
-    return out_file
+    return ret.decode("utf-8")
 
 
-def file_compile_asm(file, inc_paths, out_path, CC, CFLAGS):
+def first_preprocess(srcFile: str, projPath: str, includes: str, macro_def: str = '') -> int:
+    relaPath = os.path.relpath(srcFile, projPath)
+    preOutPath = os.path.join(projPath, 'fastlog_out', relaPath+'.i')
+    mkdirs(os.path.dirname(preOutPath))
+
+    ret = preprocess(srcFile, includes, macro_def)
+    preOutFile = open(preOutPath, mode='w+')
+    preOutFile.write(ret)
+    preOutFile.close
+    return use_fastlog(ret)
+
+
+def second_preprocess(srcFile: str, projPath: str, includes: str, macro_def: str = '') -> int:
+    relaPath = os.path.relpath(srcFile, projPath)
+    preOutPath = os.path.join(projPath, 'fastlog_out', relaPath+'.ii.c')
+    mkdirs(os.path.dirname(preOutPath))
+
+    ret = preprocess(srcFile, includes, macro_def)
+    preOutFile = open(preOutPath, mode='w+')
+    preOutFile.write(ret)
+    preOutFile.close
+    return preOutPath
+
+
+def file_compile_asm(file, inc_paths, outDir, CC, CFLAGS):
     inc_path = ''
     for i_path in inc_paths:
         inc_path += ' -I '+i_path
 
-    macro_defs = " -D PYTHON_SATRT= -D PYTHON_END= -D PYTHON_STRU_START= -D PYTHON_STRU_END= -D PYTHON_GET=" + \
-        " -D FILE_ADDR="+str(0)
+    macro_defs = " -D FILE_ADDR="+str(0)
 
-    (relative_dir, file_name) = os.path.split(file)
-    out_file_dir = os.path.join(out_path, 'build/myout', relative_dir)
-    mkdir(out_file_dir)
-    out_file = os.path.join(out_file_dir, file_name+'.s')
+    (relative_dir, fileName) = os.path.split(file)
+    out_file_dir = os.path.join(outDir, 'build/myout', relative_dir)
+    mkdirs(out_file_dir)
+    out_file = os.path.join(out_file_dir, fileName+'.s')
     if True == os.path.isfile(out_file):
         os.remove(out_file)
 
@@ -70,7 +71,7 @@ def file_compile_asm(file, inc_paths, out_path, CC, CFLAGS):
     # print(cmd_str)
     ret = subprocess.check_output(cmd_str, shell=True)
 
-    shutil.move(file_name+'.s', out_file)
+    shutil.move(fileName+'.s', out_file)
 
     sys = platform.system()
     if sys == "Windows":
@@ -79,6 +80,22 @@ def file_compile_asm(file, inc_paths, out_path, CC, CFLAGS):
     else:
         # print(ret)
         pass
+
+
+def file_compile(srcFile: str, projPath: str, compileCmd: str):
+    recordItems = {}
+    recordItems = read_record(projPath, 'fastlog.json')
+    if not recordItems:
+        return compileCmd
+
+    recordItemHash = hashlib.md5(
+        (srcFile).encode()).hexdigest()
+    if recordItemHash in recordItems:
+        recordItem = recordItems[recordItemHash]
+        compileCmd += " -D FILE_ADDR=" + \
+            str(recordItem['addr_start']) + \
+            " -D USE_FASTLOG= -D PYTHON_SCOPE_PRE="
+    return compileCmd
 
 
 def get_count_lvl(count):
@@ -89,62 +106,64 @@ def get_count_lvl(count):
     return (count/0x100)*0x100+0x100
 
 
-def need_malloc_addr(count_old, count):
+def need_malloc_addr(countOld, count):
     lvl = get_count_lvl(count)
-    lvl_old = get_count_lvl(count_old)
-    lvl_chg = lvl-lvl_old
-    if (0 < lvl_chg) or (-2 >= lvl_chg):
+    lvlOld = get_count_lvl(countOld)
+    lvlChg = lvl-lvlOld
+    if (0 < lvlChg) or (-2 >= lvlChg):
         return True
-
     return False
 
 
-def malloc_addr(record_items_old, record_items):
-    addrs_free = []
-    for record_item_hash, record_item in record_items.items():
+def malloc_addr(recordItemsOld, recordItems):
+    addrsFree = []
+    for recordItemHash, recordItem in recordItems.items():
         flag = False
-        for record_item_hash_old, record_item_old in record_items_old.items():
-            if (record_item_hash_old == record_item_hash) and (record_item_old['file'] == record_item['file']):
-                record_items[record_item_hash]['new_file'] = False
-                if need_malloc_addr(record_item_old['count'], record_item['count']):
-                    record_items[record_item_hash]['re_alloc'] = True
+        if recordItemHash in recordItemsOld:
+            recordItemOld = recordItemsOld[recordItemHash]
+            if (recordItemOld['file'] == recordItem['file']):
+                recordItems[recordItemHash]['new_file'] = False
+                if need_malloc_addr(recordItemOld['count'], recordItem['count']):
+                    recordItems[recordItemHash]['re_alloc'] = True
                 flag = True
                 break
+            else:
+                return
         if False == flag:
-            record_items[record_item_hash]['re_alloc'] = False
+            recordItems[recordItemHash]['re_alloc'] = False
 
     [addr, len] = [0, 0]
-    for record_item_hash, record_item in record_items.items():
-        if (False == record_item['new_file']) and (False == record_items[record_item_hash]['re_alloc']):
-            record_items[record_item_hash]['addr_start'] = record_items_old[record_item_hash]['addr_start']
-            record_items[record_item_hash]['addr_len'] = record_items_old[record_item_hash]['addr_len']
-            if (addr + len) < record_items[record_item_hash]['addr_start']:
-                addrs_free.append(
-                    [addr, record_items[record_item_hash]['addr_start']-addr-len])
-            addr = record_items[record_item_hash]['addr_start']
-            len = record_items[record_item_hash]['addr_len']
-    addrs_free.append([addr+len, 0x10000-(addr + len)])
-    # print(addrs_free)
+    for recordItemHash, recordItem in recordItems.items():
+        if (False == recordItem['new_file']) and (False == recordItems[recordItemHash]['re_alloc']):
+            recordItems[recordItemHash]['addr_start'] = recordItemsOld[recordItemHash]['addr_start']
+            recordItems[recordItemHash]['addr_len'] = recordItemsOld[recordItemHash]['addr_len']
+            if (addr + len) < recordItems[recordItemHash]['addr_start']:
+                addrsFree.append(
+                    [addr, recordItems[recordItemHash]['addr_start']-addr-len])
+            addr = recordItems[recordItemHash]['addr_start']
+            len = recordItems[recordItemHash]['addr_len']
+    addrsFree.append([addr+len, 0x10000-(addr + len)])
+    # print(addrsFree)
 
-    for record_item_hash, record_item in record_items.items():
-        if (True == record_item['new_file']) or (True == record_item['re_alloc']):
-            for (i, (addr, len)) in enumerate(addrs_free):
-                lvl = get_count_lvl(record_item['count'])
+    for recordItemHash, recordItem in recordItems.items():
+        if (True == recordItem['new_file']) or (True == recordItem['re_alloc']):
+            for (i, (addr, len)) in enumerate(addrsFree):
+                lvl = get_count_lvl(recordItem['count'])
                 if len >= lvl:
-                    record_items[record_item_hash]['addr_start'] = addr
-                    record_items[record_item_hash]['addr_len'] = get_count_lvl(
-                        record_item['count'])
+                    recordItems[recordItemHash]['addr_start'] = addr
+                    recordItems[recordItemHash]['addr_len'] = get_count_lvl(
+                        recordItem['count'])
                     if lvl == len:
-                        del addrs_free[i]
-                    addrs_free[i][0] = addr+lvl
-                    addrs_free[i][1] = len-lvl
+                        del addrsFree[i]
+                    addrsFree[i][0] = addr+lvl
+                    addrsFree[i][1] = len-lvl
                     break
-    # print(addrs_free)
+    # print(addrsFree)
 
 
 def get_fastlog_call(file_path, out_file_path, print_items):
     # print(out_file_path)
-    cmd_str = "clang --target=arm-none-eabi -S -O0 -emit-llvm " + \
+    cmd_str = "clang -std=gnu17 --target=arm-none-eabi -S -O0 -emit-llvm " + \
         ' -ffreestanding -fno-common -g  -mabi=aapcs   -fno-asynchronous-unwind-tables' + \
         " -fno-pie -fno-pic -fno-strict-overflow  " + \
         '  -ffunction-sections -fdata-sections -specs=nano.specs ' +\
@@ -180,11 +199,12 @@ def get_fastlog_call(file_path, out_file_path, print_items):
     context = file.read()
     file.close()
     pattern = re.compile(
-        r'sizeof_stru_member(\d+) = internal global \[10 x i32\] (.+), align 4')   #
+        #
+        r'sizeof_stru_member(\d+) = internal global \[10 x i32\] (.+), align 4')
     result = pattern.findall(context)
     if result:
         for (line_num, args) in result:
-            if('zeroinitializer' == args):
+            if ('zeroinitializer' == args):
                 args = [0 for x in range(10)]
             else:
                 matchObj = re.match(
@@ -197,7 +217,7 @@ def get_fastlog_call(file_path, out_file_path, print_items):
         result = pattern.findall(context)
         if result:
             for (line_num, args) in result:
-                if('[10 x i32] zeroinitializer' == args):
+                if ('[10 x i32] zeroinitializer' == args):
                     args = [0 for x in range(10)]
                 else:
                     matchObj = re.match(
@@ -214,15 +234,15 @@ def get_fastlog_call(file_path, out_file_path, print_items):
                 local_print_items[line_num]['args'] = args
 
     pattern = re.compile(
-        r'typeof_stru_member(\d+) = internal global \[10 x i32\] (.+), align 4')   #
+        r'typeof_stru_member(\d+) = internal global \[10 x i32\] (.+), align 4')
     result = pattern.findall(context)
     if result:
         for (line_num, args) in result:
-            if('zeroinitializer' == args):
+            if ('zeroinitializer' == args):
                 args = [0 for x in range(10)]
             else:
                 matchObj = re.match(
-                    r'\[i32 (\d), i32 (\d), i32 (\d), i32 (\d), i32 (\d), i32 (\d), i32 (\d), i32 (\d), i32 (\d), i32 (\d)\]', args, re.M | re.I)
+                    r'\[i32 (\d+), i32 (\d+), i32 (\d+), i32 (\d+), i32 (\d+), i32 (\d+), i32 (\d+), i32 (\d+), i32 (\d+), i32 (\d+)\]', args, re.M | re.I)
                 args = [int(matchObj.group(x+1)) for x in range(10)]
             local_print_items[line_num]['args_type'] = args
     else:
@@ -231,7 +251,7 @@ def get_fastlog_call(file_path, out_file_path, print_items):
         result = pattern.findall(context)
         if result:
             for (line_num, args) in result:
-                if('[10 x i32] zeroinitializer' == args):
+                if ('[10 x i32] zeroinitializer' == args):
                     args = [0 for x in range(10)]
                 else:
                     matchObj = re.match(
@@ -255,68 +275,129 @@ def get_fastlog_call(file_path, out_file_path, print_items):
     return
 
 
-def fastlog(srcs_stru: list[str], includes: str, out_path: str):
-    record_items = {}
-    record_items_old = {}
+def tryLock(f):
+    try:
+        fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        return True
+    except Exception as e:
+        return False
+
+
+def tryUnLock(f):
+    try:
+        fcntl.flock(f, fcntl.LOCK_UN)
+        return True
+    except Exception as e:
+        return False
+
+# Make the records of the files using FastLog in this project.
+# @srcFile: The full path of the c file
+# @includes: The include path strings
+
+
+def fastlog_make_record(srcFile: str, projPath: str, includes: str):
+    relaPath = os.path.relpath(srcFile, projPath)
 
     # get all '*.c' files use fastlog module
-    for c_src in srcs_stru:
-        appear_cnt = is_fastlog_files(c_src)
-        if appear_cnt:
-            # count: Times 'fastlog' called
-            # addr_start: The start addr alloc for tag
-            # addr_len: The addrs alloc for tag
-            # re_alloc: If this file addrs need to realloc
-            # new_file: If this file is new add
-            record_item = {'file': srcs_stru[c_src]['file'], 'abs_path': c_src,
-                           'count': appear_cnt, 'addr_start': 0, 'addr_len': 0, 're_alloc': False, 'new_file': True}
-
-            record_item_hash = hashlib.md5(
-                (c_src).encode()).hexdigest()
-            record_items[record_item_hash] = record_item
-
-    fastlog_file = os.path.join(out_path + "fastlog.json")
-    if os.path.isfile(fastlog_file):
-        record_json_f = open(fastlog_file, mode='r')
-        context = record_json_f.read()
-        record_json_f.close()
-        record_items_old = json.loads(context)
-
-    if 0 == len(record_items):
-        record_json = json.dumps(record_items)
-        # print(record_json)
-        record_json_f = open(fastlog_file, mode='w')
-        record_json_f.write(record_json)
-        record_json_f.close()
+    appear_cnt = first_preprocess(srcFile, projPath, includes)
+    if appear_cnt:
+        # count: Times 'fastlog' called
+        # addr_start: The start addr alloc for tag
+        # addr_len: The addrs alloc for tag
+        # re_alloc: If this file addrs need to realloc
+        # new_file: If this file is new add
+        recordItem = {'file': relaPath, 'abs_path': srcFile,
+                      'count': appear_cnt, 'addr_start': 0, 'addr_len': 0, 're_alloc': False, 'new_file': True}
+    else:
         return
 
-    malloc_addr(record_items_old, record_items)
+    fastlogRecFile = os.path.join(projPath, 'fastlog_out', 'fastlog.json')
+    mkdirs(os.path.dirname(fastlogRecFile))
+    recordFile = open(fastlogRecFile, mode='a+')
 
-    record_json = json.dumps(record_items)
-    # print(record_json)
-    record_json_f = open(fastlog_file, mode='w')
-    record_json_f.write(record_json)
-    record_json_f.close()
+    while tryLock(recordFile) != True:
+        time.sleep(0.001)
 
-    # get
-    fastlog_lines_file = os.path.join(out_path + "fastlog_lines.json")
+    recordItems = {}
+    context = recordFile.read()
+    if context:
+        recordItems = json.loads(context)
+    recordItemHash = hashlib.md5(
+        (srcFile).encode()).hexdigest()
+    recordItems[recordItemHash] = recordItem
+    recordJson = json.dumps(recordItems)
+    # print(recordJson)
+    recordFile.write(recordJson)
+    tryUnLock(recordFile)
+    recordFile.close()
+
+
+def read_record(projPath: str, fileName: str):
+    recordItems = {}
+    fastlogRecFile = os.path.join(
+        projPath, 'fastlog_out', fileName)
+    if os.path.isfile(fastlogRecFile):
+        recordFile = open(fastlogRecFile, mode='r')
+        context = recordFile.read()
+        recordFile.close()
+        recordItems = json.loads(context)
+    return recordItems
+
+
+# @srcFile: The full path of the c file
+# @includes: The include path strings
+def fastlog(srcFile: str, projPath: str, includes: str):
+    recordItems = {}
+    recordItemsOld = {}
+
+    relaPath = os.path.relpath(srcFile, projPath)
+
+    recordItemsOld = read_record(projPath, 'fastlog.old.json')
+    recordItems = read_record(projPath, 'fastlog.json')
+    if not recordItems:
+        return False
+
+    malloc_addr(recordItemsOld, recordItems)
+
+    fastlog_lines_file = os.path.join(
+        projPath, 'fastlog_out', "fastlog_lines.json")
     fastlog_lines_f = open(fastlog_lines_file, mode='w')
     print_items = {}
 
-    for record_item in record_items.values():
-        file = record_item['abs_path']
+    for recordItem in recordItems.values():
+        srcFile = recordItem['abs_path']
         # print(file)
-        cppdefines = ''
-        for define in srcs_stru[file]['defs']:
-            cppdefines += ' -D '+define + ' '
-        cppdefines += includes
-        cppdefines += ' -D '+'CONFIG_ARM '
-        cppdefines += " -D FILE_ADDR=" + str(record_item['addr_start']) + \
-            " -D PYTHON_SATRT= -D PYTHON_END= -D PYTHON_STRU_START= -D PYTHON_STRU_END= -D PYTHON_GET= -D PYTHON_SCOPE_PRE=static"
-        out_file_p = file_preprocess(
-            file, srcs_stru[file]['incs'], out_path, macro_def=cppdefines)
-        get_fastlog_call(file, out_file_p, print_items)
+        cppdefines = ' -D '+'CONFIG_ARM '
+        cppdefines += " -D FILE_ADDR=" + \
+            str(recordItem['addr_start']) + \
+            " -D USE_FASTLOG= -D PYTHON_SCOPE_PRE=static"
+        out_file_p = second_preprocess(
+            srcFile, projPath, includes, macro_def=cppdefines)
+        get_fastlog_call(srcFile, out_file_p, print_items)
     print_json = json.dumps(print_items)
     fastlog_lines_f.write(print_json)
 
-    return record_items
+    return recordItems
+
+
+def fastlog_clean(projPath: str):
+    fastlogRecFile = os.path.join(projPath, 'fastlog_out', 'fastlog.json')
+    if os.path.isfile(fastlogRecFile):
+        os.remove(fastlogRecFile)
+
+    fastlogOldRecFile = os.path.join(
+        projPath, 'fastlog_out', 'fastlog.old.json')
+    if os.path.isfile(fastlogOldRecFile):
+        os.remove(fastlogOldRecFile)
+
+
+def fastlog_init(projPath: str):
+    fastlogRecFile = os.path.join(projPath, 'fastlog_out', 'fastlog.json')
+    fastlogOldRecFile = os.path.join(
+        projPath, 'fastlog_out', 'fastlog.old.json')
+
+    if os.path.isfile(fastlogOldRecFile):
+        os.remove(fastlogOldRecFile)
+
+    if os.path.isfile(fastlogRecFile):
+        os.rename(fastlogRecFile, fastlogOldRecFile)
