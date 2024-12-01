@@ -51,10 +51,10 @@ The technical problem to be solved by this solution is that more memory is occup
         GET_STRUCT_VAR_MEMBER(frame, preamble) = (0xAA & 0xFC) | (0x00);                                 \
         GET_STRUCT_VAR_MEMBER(frame, len) = sizeof(GET_STRUCT_TYPE(frame)) - 2;                          \
         GET_STRUCT_VAR_MEMBER(frame, tail) = 0x55;                                                       \
-        PYTHON_SCOPE_PRE char *GEN_NAME(fast_print_str) = str;                                           \
+        PYTHON_SCOPE_PRE char *GEN_NAME(fastlog_str) = str;                                           \
         PYTHON_SCOPE_PRE int GEN_NAME(sizeof_stru_member)[] = {GET_MACRO_PARAS_SIZE(__VA_ARGS__)};       \
         PYTHON_SCOPE_PRE int GEN_NAME(typeof_stru_member)[] = {GET_MACRO_PARAS_TYPE_FIX(__VA_ARGS__)};   \
-        PYTHON_SCOPE_PRE char *GEN_NAME(fast_print_paras_str)[] = {                                      \
+        PYTHON_SCOPE_PRE char *GEN_NAME(fastlog_paras_str)[] = {                                      \
             MACRO_PARAS_ENUM_OPT(STR_PARAS, GET_TEMP_VARS(__VA_ARGS__))};                                \
         GET_STRUCT_VAR_MEMBER(frame, global_cnt) = SET_COUNTER(__COUNTER__);                             \
         GET_STRUCT_VAR_MEMBER(frame, GET_STRUCT_AUTO_VAR()) = GET_STRUCT_AUTO_VAR();                     \
@@ -109,8 +109,8 @@ GEN_STRUCT(frame, unsigned char preamble; unsigned char len; unsigned short glob
 GET_STRUCT_VAR_MEMBER(frame, preamble) = (0xAA & 0xFC) | (0x00);                                // gen_frame37.preamble = (0xAA & 0xFC) | (0x00);
 GET_STRUCT_VAR_MEMBER(frame, len) = sizeof(GET_STRUCT_TYPE(frame)) - 2;                         // gen_frame37.len = sizeof(struct gen_frame37_stru) - 2;
 GET_STRUCT_VAR_MEMBER(frame, tail) = 0x55;                                                      // gen_frame37.tail = 0x55;
-PYTHON_SCOPE_PRE char *GEN_NAME(fast_print_str) = str;                                          // Get format string
-                                                                                                // PYTHON_SCOPE_PRE char *fast_print_str37 = "hello %d %d %d %d %d";
+PYTHON_SCOPE_PRE char *GEN_NAME(fastlog_str) = str;                                          // Get format string
+                                                                                                // PYTHON_SCOPE_PRE char *fastlog_str37 = "hello %d %d %d %d %d";
 PYTHON_SCOPE_PRE int GEN_NAME(sizeof_stru_member)[] = {GET_MACRO_PARAS_SIZE(__VA_ARGS__)};      // Get debug parameter bit width
                                                                                                 // PYTHON_SCOPE_PRE int sizeof_stru_member37[] = {(sizeof(0)), (sizeof(1)), (sizeof(2)), (sizeof(3)), (sizeof(4)), (0), (0), (0), (0), (0)};
 PYTHON_SCOPE_PRE int GEN_NAME(typeof_stru_member)[] = {GET_MACRO_PARAS_TYPE_FIX(__VA_ARGS__)};  // Get debug parameter type
@@ -159,8 +159,8 @@ PYTHON_SCOPE_PRE int GEN_NAME(typeof_stru_member)[] = {GET_MACRO_PARAS_TYPE_FIX(
                                                                                                 // (__builtin_types_compatible_p(typeof(4), float) ? 7 : 
                                                                                                 // (__builtin_types_compatible_p(typeof(4), double) ? 8 : 
                                                                                                 // (__builtin_types_compatible_p(typeof(4), typeof(const char *)) ? 9 : 0))))))))), 0, 0, 0, 0, 0};
-PYTHON_SCOPE_PRE char *GEN_NAME(fast_print_paras_str)[] = {                                     // 
-    MACRO_PARAS_ENUM_OPT(STR_PARAS, GET_TEMP_VARS(__VA_ARGS__))};                               // PYTHON_SCOPE_PRE char *fast_print_paras_str37[] = {
+PYTHON_SCOPE_PRE char *GEN_NAME(fastlog_paras_str)[] = {                                     // 
+    MACRO_PARAS_ENUM_OPT(STR_PARAS, GET_TEMP_VARS(__VA_ARGS__))};                               // PYTHON_SCOPE_PRE char *fastlog_paras_str37[] = {
                                                                                                 //     "temp_37_5",
                                                                                                 //     "temp_37_4",
                                                                                                 //     "temp_37_3",
@@ -212,7 +212,7 @@ do
     gen_frame37.preamble = (0xAA & 0xFC) | (0x00);
     gen_frame37.len = sizeof(struct gen_frame37_stru) - 2;
     gen_frame37.tail = 0x55;
-    PYTHON_SCOPE_PRE char *fast_print_str37 = "hello %d %d %d %d %d";
+    PYTHON_SCOPE_PRE char *fastlog_str37 = "hello %d %d %d %d %d";
     PYTHON_SCOPE_PRE int sizeof_stru_member37[] = {(sizeof(0)), (sizeof(1)), (sizeof(2)), (sizeof(3)), (sizeof(4)), (0), (0), (0), (0), (0)};
     PYTHON_SCOPE_PRE int typeof_stru_member37[] = {(__builtin_types_compatible_p(typeof(0), char) ? 1 : 
                                         (__builtin_types_compatible_p(typeof(0), unsigned char) ? 2 : 
@@ -259,7 +259,7 @@ do
                                         (__builtin_types_compatible_p(typeof(4), float) ? 7 : 
                                         (__builtin_types_compatible_p(typeof(4), double) ? 8 : 
                                         (__builtin_types_compatible_p(typeof(4), typeof(const char *)) ? 9 : 0))))))))), 0, 0, 0, 0, 0};
-    PYTHON_SCOPE_PRE char *fast_print_paras_str37[] = {
+    PYTHON_SCOPE_PRE char *fastlog_paras_str37[] = {
         "temp_37_5",
         "temp_37_4",
         "temp_37_3",

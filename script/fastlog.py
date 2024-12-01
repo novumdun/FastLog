@@ -6,8 +6,8 @@ import subprocess
 import re
 import os
 
-# if files use 'fast_print' module
-def is_fast_print_files(file_name):
+# if files use 'fastlog' module
+def is_fastlog_files(file_name):
     matchObj = re.match(r'(.+).c$', file_name, re.M | re.I)
     if matchObj:
         file = open(file_name, mode='r', encoding='UTF-8', errors='ignore')
@@ -142,7 +142,7 @@ def malloc_addr(record_items_old, record_items):
     # print(addrs_free)
 
 
-def get_fast_print_call(file_path, out_file_path, print_items):
+def get_fastlog_call(file_path, out_file_path, print_items):
     # print(out_file_path)
     cmd_str = "clang --target=arm-none-eabi -S -O0 -emit-llvm " + \
         ' -ffreestanding -fno-common -g  -mabi=aapcs   -fno-asynchronous-unwind-tables' + \
@@ -170,7 +170,7 @@ def get_fast_print_call(file_path, out_file_path, print_items):
         local_print_items[line_num] = {'addr': int(file_addr)+int(line_addr)}
     # print(local_print_items)
 
-    pattern = re.compile(r'fast_print_str(\d+) = "([^"]+)"')
+    pattern = re.compile(r'fastlog_str(\d+) = "([^"]+)"')
     result = pattern.findall(context)
     for (line_num, print_str) in result:
         local_print_items[line_num]['str'] = print_str
@@ -255,15 +255,15 @@ def get_fast_print_call(file_path, out_file_path, print_items):
     return
 
 
-def fast_print(srcs_stru, includes, out_path):
+def fastlog(srcs_stru, includes, out_path):
     record_items = {}
     record_items_old = {}
 
-    # get all '*.c' files use fast_print module
+    # get all '*.c' files use fastlog module
     for c_src in srcs_stru:
-        appear_cnt = is_fast_print_files(c_src)
+        appear_cnt = is_fastlog_files(c_src)
         if appear_cnt:
-            # count: Times 'fast_print' called
+            # count: Times 'fastlog' called
             # addr_start: The start addr alloc for tag
             # addr_len: The addrs alloc for tag
             # re_alloc: If this file addrs need to realloc
@@ -275,9 +275,9 @@ def fast_print(srcs_stru, includes, out_path):
                 (c_src).encode()).hexdigest()
             record_items[record_item_hash] = record_item
 
-    fast_print_file = os.path.join(out_path + "fast_print.json")
-    if os.path.isfile(fast_print_file):
-        record_json_f = open(fast_print_file, mode='r')
+    fastlog_file = os.path.join(out_path + "fastlog.json")
+    if os.path.isfile(fastlog_file):
+        record_json_f = open(fastlog_file, mode='r')
         context = record_json_f.read()
         record_json_f.close()
         record_items_old = json.loads(context)
@@ -285,7 +285,7 @@ def fast_print(srcs_stru, includes, out_path):
     if 0 == len(record_items):
         record_json = json.dumps(record_items)
         # print(record_json)
-        record_json_f = open(fast_print_file, mode='w')
+        record_json_f = open(fastlog_file, mode='w')
         record_json_f.write(record_json)
         record_json_f.close()
         return
@@ -294,13 +294,13 @@ def fast_print(srcs_stru, includes, out_path):
 
     record_json = json.dumps(record_items)
     # print(record_json)
-    record_json_f = open(fast_print_file, mode='w')
+    record_json_f = open(fastlog_file, mode='w')
     record_json_f.write(record_json)
     record_json_f.close()
 
     # get
-    fast_print_lines_file = os.path.join(out_path + "fast_print_lines.json")
-    fast_print_lines_f = open(fast_print_lines_file, mode='w')
+    fastlog_lines_file = os.path.join(out_path + "fastlog_lines.json")
+    fastlog_lines_f = open(fastlog_lines_file, mode='w')
     print_items = {}
 
     for record_item in record_items.values():
@@ -315,8 +315,8 @@ def fast_print(srcs_stru, includes, out_path):
             " -D PYTHON_SATRT= -D PYTHON_END= -D PYTHON_STRU_START= -D PYTHON_STRU_END= -D PYTHON_GET= -D PYTHON_SCOPE_PRE=static"
         out_file_p = file_preprocess(
             file, srcs_stru[file]['incs'], out_path, macro_def=cppdefines)
-        get_fast_print_call(file, out_file_p, print_items)
+        get_fastlog_call(file, out_file_p, print_items)
     print_json = json.dumps(print_items)
-    fast_print_lines_f.write(print_json)
+    fastlog_lines_f.write(print_json)
 
     return record_items

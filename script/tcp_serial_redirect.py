@@ -39,7 +39,7 @@ class FrameRx:
         self.not_frame_data = bytearray(1024)
         self.not_frame_cnt = 0
 
-        record_json_f = open(r"./fast_print_lines.json", mode='r')
+        record_json_f = open(r"./fastlog_lines.json", mode='r')
         context = record_json_f.read()
         record_json_f.close()
         self.record_items = json.loads(context)

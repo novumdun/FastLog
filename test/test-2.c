@@ -5,7 +5,7 @@
 #include "macro_struct.h"
 #include "macro_type.h"
 
-#include "fast_print_ext.h"
+#include "fastlog_ext.h"
 
 #include <oneos_config.h>
 #include <os_task.h>
@@ -46,4 +46,4 @@ int test_2()
 
 	return 0;
 }
-SH_CMD_EXPORT(fast_print_test_2, test_2, "fast print test")
+SH_CMD_EXPORT(fastlog_test_2, test_2, "fast print test")

@@ -36,15 +36,15 @@ in 'zephyr/CMakeLists.txt' "
         GET_STRUCT_VAR_MEMBER(frame, preamble) = (0xAA & 0xFC) | (0x00);                                                                                            \
         GET_STRUCT_VAR_MEMBER(frame, len) = sizeof(GET_STRUCT_TYPE(frame)) - 2;                                                                                     \
         GET_STRUCT_VAR_MEMBER(frame, tail) = 0x55;                                                                                                                  \
-        PYTHON_SCOPE_PRE char *GEN_NAME(fast_print_str) = str;                                                                                                      \
+        PYTHON_SCOPE_PRE char *GEN_NAME(fastlog_str) = str;                                                                                                      \
         PYTHON_SCOPE_PRE int GEN_NAME(sizeof_stru_member)[] = {GET_MACRO_PARAS_SIZE(__VA_ARGS__)};                                                                  \
         PYTHON_SCOPE_PRE int GEN_NAME(typeof_stru_member)[] = {GET_MACRO_PARAS_TYPE_FIX(__VA_ARGS__)};                                                              \
-        PYTHON_SCOPE_PRE char *GEN_NAME(fast_print_paras_str)[] = {MACRO_PARAS_ENUM_OPT(STR_PARAS, GET_TEMP_VARS(__VA_ARGS__))};                                    \
+        PYTHON_SCOPE_PRE char *GEN_NAME(fastlog_paras_str)[] = {MACRO_PARAS_ENUM_OPT(STR_PARAS, GET_TEMP_VARS(__VA_ARGS__))};                                    \
         GET_STRUCT_VAR_MEMBER(frame, global_cnt) = SET_COUNTER(__COUNTER__);                                                                                        \
         GET_STRUCT_VAR_MEMBER(frame, GET_STRUCT_AUTO_VAR()) = GET_STRUCT_AUTO_VAR();                                                                                \
         console_output_bin((char *)&GET_STRUCT_VAR(frame), sizeof(GET_STRUCT_TYPE(frame)));                                                                         \
     } while (0)
 
-//         PYTHON_SCOPE_PRE(static char *GEN_NAME(fast_print_paras_str)[] = {OPT_PARAS(MACRO_STR_NUM, GET_TEMP_VARS(__VA_ARGS__))});                                                    \
+//         PYTHON_SCOPE_PRE(static char *GEN_NAME(fastlog_paras_str)[] = {OPT_PARAS(MACRO_STR_NUM, GET_TEMP_VARS(__VA_ARGS__))});                                                    \
 
 #endif

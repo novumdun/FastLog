@@ -1,5 +1,5 @@
 script_dir = os.path.join(os.getcwd(), "../../components/fastprint/script")
-script_fp = os.path.join(script_dir, "fast_print.py")
+script_fp = os.path.join(script_dir, "fastlog.py")
 script_pre = os.path.join(script_dir, "preprocess.py")
 with open(script_fp, 'r', encoding='UTF-8') as f:
     exec(f.read())
@@ -25,7 +25,7 @@ def myStartCompile(Projects):
         includes += ' -I' + inc + ' '
     includes += ' -I' + dir + ' '
 
-    record_items = fast_print(source_stru, includes, out_dir)
+    record_items = fastlog(source_stru, includes, out_dir)
     if record_items:
         MyStartCompile(RESULT, objs, record_items)
     else:
