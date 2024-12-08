@@ -183,7 +183,7 @@ def get_fastlog_call(file_path, out_file_path, print_items):
     file.close()
 
     local_print_items = {}
-    pattern = re.compile(r'gen_frame(\d+)\.global_cnt = (\d+) \+ (\d+)')
+    pattern = re.compile(r'gen_frame(\d+)\.global_cnt = \(\((\d+)\) \+ \((\d+)\)\)')
     result = pattern.findall(context)
     for (line_num, file_addr, line_addr) in result:
         local_print_items[line_num] = {'addr': int(file_addr)+int(line_addr)}

@@ -18,7 +18,7 @@ in 'zephyr/CMakeLists.txt' "
 #include "macro_util/macro_type.h"
 
 #define GEN_NAME(name) MACRO_CAT(name, __LINE__)
-#define SET_FILE_COUNTER(cnt) (FASTLOG_FILE_ADDR + (cnt))
+#define SET_FILE_COUNTER(cnt) ((FASTLOG_FILE_ADDR) + (cnt))
 
 #define _STATIC_PARAS(num, para) PYTHON_SCOPE_PRE para;
 #define STATIC_PARAS(num, para) MACRO_PARAS_NOTDEAL_0PARAS(_STATIC_PARAS, para)
