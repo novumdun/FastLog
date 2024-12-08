@@ -11,7 +11,11 @@ to  \
 in 'zephyr/CMakeLists.txt' "
 **************************************************************************************/
 
-#ifdef USE_FASTLOG
+#define FASTLOG_STAGE_PRE1 0
+#define FASTLOG_STAGE_PRE2 1
+#define FASTLOG_STAGE_COMP 2
+
+#if (FASTLOG_STAGE == FASTLOG_STAGE_PRE2) || (FASTLOG_STAGE == FASTLOG_STAGE_COMP)
 
 #include "macro_util/macro_paras_opt.h"
 #include "macro_util/macro_struct.h"

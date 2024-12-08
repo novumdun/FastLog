@@ -34,7 +34,8 @@ def first_preprocess(srcFile: str, projPath: str, includes: str, macro_def: str 
     preOutPath = os.path.join(projPath, 'fastlog_out', relaPath+'.i')
     mkdirs(os.path.dirname(preOutPath))
 
-    ret = preprocess(srcFile, includes, macro_def)
+    ret = preprocess(srcFile, includes, macro_def +
+                     ' -D FASTLOG_STAGE=FASTLOG_STAGE_PRE1')
     preOutFile = open(preOutPath, mode='w+')
     preOutFile.write(ret)
     preOutFile.close
@@ -46,7 +47,8 @@ def second_preprocess(srcFile: str, projPath: str, includes: str, macro_def: str
     preOutPath = os.path.join(projPath, 'fastlog_out', relaPath+'.ii.c')
     mkdirs(os.path.dirname(preOutPath))
 
-    ret = preprocess(srcFile, includes, macro_def)
+    ret = preprocess(srcFile, includes, macro_def +
+                     ' -D FASTLOG_STAGE=FASTLOG_STAGE_PRE2')
     preOutFile = open(preOutPath, mode='w+')
     preOutFile.write(ret)
     preOutFile.close
@@ -94,7 +96,7 @@ def file_compile(srcFile: str, projPath: str, compileCmd: str):
         recordItem = recordItems[recordItemHash]
         compileCmd += " -D FASTLOG_FILE_ADDR=" + \
             str(recordItem['addr_start']) + \
-            " -D USE_FASTLOG= -D PYTHON_SCOPE_PRE="
+            " -D PYTHON_SCOPE_PRE= -D FASTLOG_STAGE=FASTLOG_STAGE_PRE2"
     return compileCmd
 
 
@@ -361,7 +363,7 @@ def fastlog(srcFile: str, projPath: str, includes: str):
 
     modeAddrSize = malloc_addr(recordItemsOld, recordItems)
     configHeaderDir = os.path.join(
-        projPath, 'inc', os.path.basename(projPath))
+        projPath, 'fastlog_out', os.path.basename(projPath))
     mkdirs(configHeaderDir)
     configHeaderPath = os.path.join(
         configHeaderDir, 'fastlog_config.h')
@@ -387,7 +389,7 @@ def fastlog(srcFile: str, projPath: str, includes: str):
         cppdefines = ' -D '+'CONFIG_ARM '
         cppdefines += " -D FASTLOG_FILE_ADDR=" + \
             str(recordItem['addr_start']) + \
-            " -D USE_FASTLOG= -D PYTHON_SCOPE_PRE=static"
+            " -D PYTHON_SCOPE_PRE=static"
         out_file_p = second_preprocess(
             srcFile, projPath, includes, macro_def=cppdefines)
         get_fastlog_call(srcFile, out_file_p, print_items)
@@ -465,7 +467,6 @@ if __name__ == '__main__':  # noqa
         case 'init':
             fastlog_init(args.PROJECT)
         case 'clean':
-            print("sdddddddddddddd")
             fastlog_clean(args.PROJECT)
         case 'record':
             fastlog_make_record(args.FILE, args.PROJECT, args.INCLUDE_PATHS)
