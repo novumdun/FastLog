@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#include "fastlog.h"
+#include "fastlog_test.h"
 
 int main(int argc, char **argv) {
     char t0 = 01;
@@ -13,6 +13,8 @@ int main(int argc, char **argv) {
     unsigned int t5 = 6;
     float t6 = 1.0;
     double t7 = 9;
+
+    FASLOG_MODE_INIT(test)(0);
 
     while (1) {
         STR_BUF_WRITE_STRU("hello");

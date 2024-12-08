@@ -58,7 +58,7 @@ def file_compile_asm(file, inc_paths, outDir, CC, CFLAGS):
     for i_path in inc_paths:
         inc_path += ' -I '+i_path
 
-    macro_defs = " -D FILE_ADDR="+str(0)
+    macro_defs = " -D FASTLOG_FILE_ADDR="+str(0)
 
     (relative_dir, fileName) = os.path.split(file)
     out_file_dir = os.path.join(outDir, 'build/myout', relative_dir)
@@ -92,7 +92,7 @@ def file_compile(srcFile: str, projPath: str, compileCmd: str):
         (srcFile).encode()).hexdigest()
     if recordItemHash in recordItems:
         recordItem = recordItems[recordItemHash]
-        compileCmd += " -D FILE_ADDR=" + \
+        compileCmd += " -D FASTLOG_FILE_ADDR=" + \
             str(recordItem['addr_start']) + \
             " -D USE_FASTLOG= -D PYTHON_SCOPE_PRE="
     return compileCmd
@@ -368,7 +368,7 @@ def fastlog(srcFile: str, projPath: str, includes: str):
         srcFile = recordItem['abs_path']
         # print(file)
         cppdefines = ' -D '+'CONFIG_ARM '
-        cppdefines += " -D FILE_ADDR=" + \
+        cppdefines += " -D FASTLOG_FILE_ADDR=" + \
             str(recordItem['addr_start']) + \
             " -D USE_FASTLOG= -D PYTHON_SCOPE_PRE=static"
         out_file_p = second_preprocess(
