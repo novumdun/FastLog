@@ -350,7 +350,7 @@ def read_record(projPath: str, fileName: str):
 
 # @srcFile: The full path of the c file
 # @includes: The include path strings
-def fastlog(srcFile: str, projPath: str, includes: str):
+def fastlog(srcFile: str, projPath: str, projName: str, includes: str):
     recordItems = {}
     recordItemsOld = {}
 
@@ -363,7 +363,7 @@ def fastlog(srcFile: str, projPath: str, includes: str):
 
     modeAddrSize = malloc_addr(recordItemsOld, recordItems)
     configHeaderDir = os.path.join(
-        projPath, 'fastlog_out', os.path.basename(projPath))
+        projPath, 'fastlog_out', 'inc', projName)
     mkdirs(configHeaderDir)
     configHeaderPath = os.path.join(
         configHeaderDir, 'fastlog_config.h')
@@ -372,10 +372,10 @@ def fastlog(srcFile: str, projPath: str, includes: str):
 #ifndef __{0}_H__
 #define __{0}_H__
 
-#define FASTLOG_SIZE_{0} {1}
+#define FASTLOG_MOD_SIZE_{0} {1}
 
 #endif
-'''.format(os.path.basename(projPath).upper(), modeAddrSize)
+'''.format(projName, modeAddrSize)
     configHeader.write(header)
 
     fastlog_lines_file = os.path.join(

@@ -14,7 +14,7 @@ int main(int argc, char **argv) {
     float t6 = 1.0;
     double t7 = 9;
 
-    FASLOG_MODE_INIT(test)(0);
+    FASTLOG_MOD_INIT(test)(0);
 
     while (1) {
         STR_BUF_WRITE_STRU("hello");

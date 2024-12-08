@@ -54,10 +54,11 @@ extern int fastlog_write(int fd, char *buff, int len);
 
 #define FASTLOG_WRITE(raw, len) fastlog_write(fastlog_fd, raw, len)
 
-#define FASLOG_MODE_BASE(name) MACRO_CAT(name, fastlog_mode_cnt_base)
-#define FASLOG_MODE_DECLEARE(name) int FASLOG_MODE_BASE(name) = -1
-#define FASLOG_MODE_INIT(name) MACRO_CAT(name, fastlog_mode_cnt_base_init)
-#define FASLOG_MODE_BASE_GET(name) MACRO_CAT(name, fastlog_mode_cnt_base_get)
+#define FASTLOG_MOD_BASE(name) MACRO_CAT(name, fastlog_mode_cnt_base)
+#define FASTLOG_MOD_DECLEARE(name) int FASTLOG_MOD_BASE(name) = -1
+#define FASTLOG_MOD_INIT(name) MACRO_CAT(name, fastlog_mode_cnt_base_init)
+#define FASTLOG_MOD_BASE_GET(name) MACRO_CAT(name, fastlog_mode_cnt_base_get)
+#define FASTLOG_MOD_SIZE(name) MACRO_CAT(FASTLOG_MOD_SIZE_, name)
 
 #endif
 
