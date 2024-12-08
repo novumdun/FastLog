@@ -159,6 +159,7 @@ def malloc_addr(recordItemsOld, recordItems):
                     addrsFree[i][1] = len-lvl
                     break
     # print(addrsFree)
+    return addrsFree[-1][0]
 
 
 def get_fastlog_call(file_path, out_file_path, print_items):
@@ -183,7 +184,8 @@ def get_fastlog_call(file_path, out_file_path, print_items):
     file.close()
 
     local_print_items = {}
-    pattern = re.compile(r'gen_frame(\d+)\.global_cnt = \(\((\d+)\) \+ \((\d+)\)\)')
+    pattern = re.compile(
+        r'gen_frame(\d+)\.global_cnt = \(\((\d+)\) \+ \((\d+)\)\)')
     result = pattern.findall(context)
     for (line_num, file_addr, line_addr) in result:
         local_print_items[line_num] = {'addr': int(file_addr)+int(line_addr)}
@@ -357,7 +359,22 @@ def fastlog(srcFile: str, projPath: str, includes: str):
     if not recordItems:
         return False
 
-    malloc_addr(recordItemsOld, recordItems)
+    modeAddrSize = malloc_addr(recordItemsOld, recordItems)
+    configHeaderDir = os.path.join(
+        projPath, 'inc', os.path.basename(projPath))
+    mkdirs(configHeaderDir)
+    configHeaderPath = os.path.join(
+        configHeaderDir, 'fastlog_config.h')
+    configHeader = open(configHeaderPath, mode='w')
+    header = '''
+#ifndef __{0}_H__
+#define __{0}_H__
+
+#define FASTLOG_SIZE_{0} {1}
+
+#endif
+'''.format(os.path.basename(projPath).upper(), modeAddrSize)
+    configHeader.write(header)
 
     fastlog_lines_file = os.path.join(
         projPath, 'fastlog_out', "fastlog_lines.json")
@@ -401,3 +418,56 @@ def fastlog_init(projPath: str):
 
     if os.path.isfile(fastlogRecFile):
         os.rename(fastlogRecFile, fastlogOldRecFile)
+
+
+if __name__ == '__main__':  # noqa
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description='fastlog')
+
+    parser.add_argument(
+        '-PROJECT',
+        type=str,
+        help='project path')
+
+    parser.add_argument(
+        '-NAME',
+        type=str,
+        nargs='?',
+        help='project name, default: %(default)s',
+        default='main')
+
+    parser.add_argument(
+        '-FILE',
+        type=str,
+        nargs='?',
+        help='full path of source file',
+        default=None)
+
+    parser.add_argument(
+        '-INCLUDE_PATHS',
+        type=str,
+        nargs='?',
+        help='include paths, like "-IFastLog/inc"',
+        default=None)
+
+    parser.add_argument(
+        '-STAGE',
+        choices=['init', 'clean', 'record', 'final'],
+        type=str,
+        nargs='?',
+        help='stage, default: %(default)s',
+        default='init')
+
+    args = parser.parse_args()
+    match args.STAGE:
+        case 'init':
+            fastlog_init(args.PROJECT)
+        case 'clean':
+            print("sdddddddddddddd")
+            fastlog_clean(args.PROJECT)
+        case 'record':
+            fastlog_make_record(args.FILE, args.PROJECT, args.INCLUDE_PATHS)
+        case 'final':
+            fastlog(args.FILE, args.PROJECT, args.INCLUDE_PATHS)
