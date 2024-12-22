@@ -15,7 +15,7 @@ int main(int argc, char **argv) {
     double t7 = 9;
     int i = 0;
 
-    fastlog_open();
+    fastlog_open("/home/dengbo/workspace/cabin/FastLog/fastlog_out/flog");
     FASTLOG_MOD_INIT(test)();
 
     while (1) {

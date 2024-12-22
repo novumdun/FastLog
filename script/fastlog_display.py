@@ -1,8 +1,5 @@
-import sys
-import socket
-import serial
 import serial.threaded
-import time
+import os
 
 import json
 import subprocess
@@ -12,12 +9,12 @@ from ctypes import *
 import struct
 
 
-def frame_deal(record_items, datas):
+def frame_deal(recordItems, datas):
     global cmd_strs, cmd_strs_w, sem
 
     addr = str(int(datas[1]) + (int(datas[2]) << 8))
-    if addr in record_items:
-        item = record_items[addr]
+    if addr in recordItems:
+        item = recordItems[addr]
 
         args_p = 3
         args_c = 0
@@ -72,18 +69,24 @@ def frame_deal(record_items, datas):
                          args_array[9])
         print(str_array.value.decode('utf-8'))
 
+def display_flog():
+    dir = os.path.dirname(__file__)
+    recordJsonFile = open(os.path.join(
+        dir, '../fastlog_out/fastlog_lines.json'), mode='r')
+    recordJson = recordJsonFile.read()
+    recordJsonFile.close()
+    recordItems = json.loads(recordJson)
 
-record_json_f = open(r"/home/dengbo/workspace/cabin/FastLog/fastlog_out/fastlog_lines.json", mode='r')
-records = record_json_f.read()
-record_json_f.close()
-record_items = json.loads(records)
+    fp = open(os.path.join(
+        dir, '../fastlog_out/flog'), mode='rb')
+    context = fp.read()
+    while (context):
+        size = int(context[0])
+        if size > len(context):
+            print('Err size')
+            break
+        frame_deal(recordItems, context[0:size])
+        context = context[size:]
 
-fp = open('/home/dengbo/workspace/cabin/FastLog/flog', mode='rb')
-context = fp.read()
-while (context):
-    size = int(context[0])
-    if size > len(context):
-        print('Err size')
-        break
-    frame_deal(record_items, context[0:size])
-    context = context[size:]
+if __name__ == '__main__':
+    display_flog()

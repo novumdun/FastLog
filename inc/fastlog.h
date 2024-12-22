@@ -66,7 +66,7 @@ struct {
     } while (0)
 
 extern int fastlog_fd;
-extern int fastlog_open(void);
+extern int fastlog_open(char *str);
 extern int fastlog_get_mode_base(int mode_size);
 extern int fastlog_write(int fd, char *buff, int len);
 
