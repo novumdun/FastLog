@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2024, dengbo19920415@hotmail.com
+ */
 #include "fastlog_test.h"
 
 FASTLOG_MOD_DECLEARE(test);

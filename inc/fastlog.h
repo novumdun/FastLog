@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2024, dengbo19920415@hotmail.com
+ */
 #ifndef __FASTLOG_h__
 #define __FASTLOG_h__
 

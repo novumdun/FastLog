@@ -1,3 +1,4 @@
+# Copyright (c) 2024, dengbo19920415@hotmail.com
 import hashlib
 import json
 import shutil

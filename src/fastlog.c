@@ -1,3 +1,6 @@
+/*
+ * Copyright (c) 2014, dengbo19920415@hotmail.com
+ */
 #include <stdarg.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -11,10 +14,11 @@ static atomic_int fastlog_cnt = 0;
 int fastlog_fd = -1;
 
 int fastlog_open(void) {
-    int fd = open("/home/dengbo/workspace/cabin/FastLog/flog", O_RDWR | O_CREAT);
+    int fd = open("/home/dengbo/workspace/cabin/FastLog/flog", O_RDWR | O_CREAT, 0666);
     if (0 > fd) {
         printf("%s.%d open file fail. Err %d.", __FILE__, __LINE__, errno);
     }
+    fastlog_fd = fd;
     return fd;
 }
 

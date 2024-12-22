@@ -7,14 +7,14 @@ fastlog_clean(projPath)
 fastlog_init(projPath)
 
 srcFile = '/home/dengbo/workspace/cabin/FastLog/src/fastlog.c'
-cmd = 'gcc ' + ' -c ' + srcFile + ' ' + includes + \
+cmd = 'gcc ' + ' -c -g ' + srcFile + ' ' + includes + \
     ' -D FASTLOG_STAGE=FASTLOG_STAGE_COMP'
 print(cmd)
 ret = subprocess.check_output(cmd, shell=True)
 print(ret.decode("utf-8"))
 
 srcFile = '/home/dengbo/workspace/cabin/FastLog/test/fastlog_test.c'
-cmd = 'gcc ' + ' -c ' + srcFile + ' ' + includes + \
+cmd = 'gcc ' + ' -c -g ' + srcFile + ' ' + includes + \
     ' -D FASTLOG_STAGE=FASTLOG_STAGE_COMP'
 print(cmd)
 ret = subprocess.check_output(cmd, shell=True)
@@ -24,7 +24,7 @@ srcFile = '/home/dengbo/workspace/cabin/FastLog/test/test.c'
 fastlog_make_record(srcFile, projPath, includes)
 fastlog(srcFile, projPath, 'test', includes)
 cmd = file_compile(srcFile, projPath, 'gcc ' +
-                   ' -c ' + srcFile + ' ' + includes)
+                   ' -c -g ' + srcFile + ' ' + includes)
 print(cmd)
 ret = subprocess.check_output(cmd, shell=True)
 print(ret.decode("utf-8"))
