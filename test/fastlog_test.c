@@ -12,4 +12,5 @@ void FASTLOG_MOD_INIT(test)(void) {
     }
     int size = FASTLOG_MOD_SIZE(test);
     FASTLOG_MOD_BASE(test) = fastlog_get_mode_base(size);
+    return;
 }

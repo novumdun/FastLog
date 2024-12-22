@@ -17,6 +17,12 @@ in 'zephyr/CMakeLists.txt' "
 
 #if (FASTLOG_STAGE == FASTLOG_STAGE_PRE2) || (FASTLOG_STAGE == FASTLOG_STAGE_COMP)
 
+#if (FASTLOG_STAGE == FASTLOG_STAGE_PRE2)
+#define PYTHON_SCOPE_PRE static
+#elif (FASTLOG_STAGE == FASTLOG_STAGE_COMP)
+#define PYTHON_SCOPE_PRE
+#endif
+
 #include "macro_util/macro_paras_opt.h"
 #include "macro_util/macro_struct.h"
 #include "macro_util/macro_type.h"
@@ -49,6 +55,7 @@ in 'zephyr/CMakeLists.txt' "
     } while (0)
 
 extern int fastlog_fd;
+extern int fastlog_open(void);
 extern int fastlog_get_mode_base(int mode_size);
 extern int fastlog_write(int fd, char *buff, int len);
 

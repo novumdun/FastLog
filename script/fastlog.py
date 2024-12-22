@@ -39,6 +39,7 @@ def first_preprocess(srcFile: str, projPath: str, includes: str, macro_def: str 
     preOutFile = open(preOutPath, mode='w+')
     preOutFile.write(ret)
     preOutFile.close
+    print(srcFile, 'FASTLOG_STAGE_PRE1 Finish')
     return use_fastlog(ret)
 
 
@@ -52,6 +53,7 @@ def second_preprocess(srcFile: str, projPath: str, includes: str, macro_def: str
     preOutFile = open(preOutPath, mode='w+')
     preOutFile.write(ret)
     preOutFile.close
+    print(srcFile, 'FASTLOG_STAGE_PRE2 Finish')
     return preOutPath
 
 
@@ -96,7 +98,8 @@ def file_compile(srcFile: str, projPath: str, compileCmd: str):
         recordItem = recordItems[recordItemHash]
         compileCmd += " -D FASTLOG_FILE_ADDR=" + \
             str(recordItem['addr_start']) + \
-            " -D PYTHON_SCOPE_PRE= -D FASTLOG_STAGE=FASTLOG_STAGE_PRE2"
+            " -D FASTLOG_STAGE=FASTLOG_STAGE_COMP"
+    print(srcFile, 'FASTLOG_STAGE_COMP Finish')
     return compileCmd
 
 
@@ -388,8 +391,7 @@ def fastlog(srcFile: str, projPath: str, projName: str, includes: str):
         # print(file)
         cppdefines = ' -D '+'CONFIG_ARM '
         cppdefines += " -D FASTLOG_FILE_ADDR=" + \
-            str(recordItem['addr_start']) + \
-            " -D PYTHON_SCOPE_PRE=static"
+            str(recordItem['addr_start'])
         out_file_p = second_preprocess(
             srcFile, projPath, includes, macro_def=cppdefines)
         get_fastlog_call(srcFile, out_file_p, print_items)

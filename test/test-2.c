@@ -12,6 +12,7 @@ int main(int argc, char **argv) {
     unsigned int t5 = 6;
     float t6 = 1.0;
     double t7 = 9;
+    int i = 0;
 
     while (1) {
         STR_BUF_WRITE_STRU("hellddddd");
@@ -24,6 +25,10 @@ int main(int argc, char **argv) {
         t0 = 2, t1 = 3, t2 = 4, t3 = 5, t4 = 6, t5 = 7;
         STR_BUF_WRITE_STRU("hellddddd %d %d %d %d %d %d %f %f", t1, t1, t2, t3, t4, t5, t6, t7);
         os_task_msleep(200);
+        i++;
+        if (i == 0x100) {
+            break;
+        }
     }
 
     return 0;
