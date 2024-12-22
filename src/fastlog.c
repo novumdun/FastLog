@@ -7,11 +7,13 @@
 #include <errno.h>
 #include <stdatomic.h>
 #include <fcntl.h>
+#include <pthread.h>
 
 #include "fastlog.h"
 
 static atomic_int fastlog_cnt = 0;
 int fastlog_fd = -1;
+static pthread_mutex_t fd_lock = PTHREAD_MUTEX_INITIALIZER;
 
 int fastlog_open(char *str) {
     int fd = open(str, O_RDWR | O_CREAT, 0666);
@@ -19,6 +21,7 @@ int fastlog_open(char *str) {
         printf("%s.%d open file fail. Err %d.", __FILE__, __LINE__, errno);
     }
     fastlog_fd = fd;
+    pthread_mutex_init(&fd_lock, NULL);
     return fd;
 }
 
@@ -35,7 +38,9 @@ int fastlog_write(int fd, char *buff, int len) {
         return -1;
     }
     while (count < size) {
+        pthread_mutex_lock(&fd_lock);
         count = write(fd, buff + count, size - count);
+        pthread_mutex_unlock(&fd_lock);
         size = size - count;
         if (count < 0) {
             return -1;
