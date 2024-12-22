@@ -1,7 +1,8 @@
 #include <stdarg.h>
 #include <stdio.h>
+#include <unistd.h>
 
-#include "fastlog.h"
+#include "fastlog_test.h"
 
 int main(int argc, char **argv) {
     char t0 = 01;
@@ -16,15 +17,15 @@ int main(int argc, char **argv) {
 
     while (1) {
         STR_BUF_WRITE_STRU("hellddddd");
-        os_task_msleep(200);
+        usleep(1);
         STR_BUF_WRITE_STRU("hellddddd %d %d %d %d %d", 0, 1, 2, 3, 4);
-        os_task_msleep(200);
+        usleep(1);
         t0 = 1, t1 = 2, t2 = 3, t3 = 4, t4 = 5, t5 = 6;
         STR_BUF_WRITE_STRU("hellddddd %d %d %d %d %d %d", t0, t1, t2, t3, t4, t5);
-        os_task_msleep(200);
+        usleep(1);
         t0 = 2, t1 = 3, t2 = 4, t3 = 5, t4 = 6, t5 = 7;
         STR_BUF_WRITE_STRU("hellddddd %d %d %d %d %d %d %f %f", t1, t1, t2, t3, t4, t5, t6, t7);
-        os_task_msleep(200);
+        usleep(1);
         i++;
         if (i == 0x100) {
             break;
