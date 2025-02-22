@@ -51,7 +51,7 @@ struct {
         GEN_STRUCT_AUTO(GET_TEMP_VARS(__VA_ARGS__));                                                                   \
         SET_TEMP_VARS(__VA_ARGS__);                                                                                    \
         SET_STRUCT_AUTO(GET_TEMP_VARS(__VA_ARGS__));                                                                   \
-        GEN_STRUCT(frame, unsigned char len; unsigned short global_cnt;                                                \
+        GEN_STRUCT(frame, unsigned short len; unsigned short global_cnt;                                               \
                    GET_STRUCT_AUTO_TYPE() GET_STRUCT_AUTO_VAR(););                                                     \
         GET_STRUCT_VAR_MEMBER(frame, len) = sizeof(GET_STRUCT_TYPE(frame));                                            \
         PYTHON_SCOPE_PRE char *GEN_NAME(fastlog_str) = str;                                                            \
